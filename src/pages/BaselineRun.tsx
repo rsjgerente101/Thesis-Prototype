@@ -7,13 +7,7 @@ import { Select } from '../components/Select';
 import { KPICard } from '../components/KPICard';
 import { MapCanvas } from '../components/MapCanvas';
 import { RouteTable } from '../components/RouteTable';
-import {
-  MapIcon,
-  ClockIcon,
-  RouteIcon,
-  UsersIcon,
-  PlayIcon
-} from 'lucide-react';
+import { MapIcon, ClockIcon, RouteIcon, UsersIcon, PlayIcon, MenuIcon, XIcon } from 'lucide-react';
 import { MOCK_DATASET, generateBaselineRun } from '../utils/mockData';
 import { AlgorithmRun } from '../types';
 
@@ -32,6 +26,7 @@ export function BaselineRun() {
   const [showLabels, setShowLabels] = useState(true);
   const [showRouteNumbers, setShowRouteNumbers] = useState(true);
   const [selectedRoute, setSelectedRoute] = useState<string | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(true); // toggle state
 
   const handleRun = () => {
     setIsRunning(true);
@@ -45,24 +40,31 @@ export function BaselineRun() {
     }, 2000);
   };
 
-  const displayedRoute = result?.routes.find(
-    r => r.id === selectedRoute
-  );
+  const displayedRoute = result?.routes.find(r => r.id === selectedRoute);
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="h-screen flex flex-col">
-        {/* Header */}
-        <div className="bg-white border-b border-gray-200 px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">
-                Baseline Route Generation
-              </h1>
-              <p className="text-sm text-gray-600">
-                Greedy Nearest Neighbor + Dijkstra Shortest Path
-              </p>
-            </div>
+        <div className="bg-white border-b border-gray-200 px-8 py-4 flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">
+              Baseline Route Generation
+            </h1>
+            <p className="text-sm text-gray-600">
+              Greedy Nearest Neighbor + Dijkstra Shortest Path
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            {/* Sidebar Toggle Button */}
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="flex items-center gap-1 text-gray-700 px-3 py-1 rounded hover:bg-gray-100 transition-colors"
+            >
+              {sidebarOpen ? <XIcon className="w-4 h-4" /> : <MenuIcon className="w-4 h-4" />}
+              <span className="text-sm">{sidebarOpen ? 'Hide Sidebar' : 'Show Sidebar'}</span>
+            </button>
+
+            {/* Back to Upload Button (untouched) */}
             <Button variant="outline" onClick={() => navigate('/')}>
               Back to Upload
             </Button>
@@ -72,7 +74,8 @@ export function BaselineRun() {
         {/* Content */}
         <div className="flex-1 flex overflow-hidden">
           {/* Map */}
-          <div className="flex-1 p-6 overflow-auto">
+          
+          <div className={`flex-1 p-6 overflow-auto transition-all duration-300 ${sidebarOpen ? '' : 'w-full'}`} style={{ minWidth: 0 }}>
             {result ? (
               <MapCanvas
                 routes={result.routes}
@@ -93,163 +96,161 @@ export function BaselineRun() {
           </div>
 
           {/* Sidebar */}
-          <div className="w-96 bg-white border-l border-gray-200 p-6 overflow-auto">
-            {/* Parameters */}
-            <Card className="mb-6">
-              <h2 className="text-sm font-semibold text-gray-900 mb-4">
-                Parameters
-              </h2>
+          {sidebarOpen && (
+            <div className="w-96 bg-white border-l border-gray-200 p-6 overflow-auto transition-all duration-300">
+              {/* Parameters */}
+              <Card className="mb-6">
+                <h2 className="text-sm font-semibold text-gray-900 mb-4">
+                  Parameters
+                </h2>
 
-              <div className="space-y-3">
-                <Input
-                  label="Number of Vehicles"
-                  type="number"
-                  value={parameters.vehicles}
-                  onChange={val =>
-                    setParameters({ ...parameters, vehicles: val })
-                  }
-                />
+                <div className="space-y-3">
+                  <Input
+                    label="Number of Vehicles"
+                    type="number"
+                    value={parameters.vehicles}
+                    onChange={val =>
+                      setParameters({ ...parameters, vehicles: val })
+                    }
+                  />
 
-                <Select
-                  label="Depot"
-                  value={parameters.depot}
-                  onChange={val =>
-                    setParameters({ ...parameters, depot: val })
-                  }
-                  options={MOCK_DATASET.depots.map(d => ({
-                    value: d.id,
-                    label: d.name
-                  }))}
-                />
-
-                <Input
-                  label="Speed Factor (km/h)"
-                  type="number"
-                  value={parameters.speed}
-                  onChange={val =>
-                    setParameters({ ...parameters, speed: val })
-                  }
-                />
-
-                <Input
-                  label="Random Seed"
-                  type="number"
-                  value={parameters.seed}
-                  onChange={val =>
-                    setParameters({ ...parameters, seed: val })
-                  }
-                />
-              </div>
-
-              <Button
-                onClick={handleRun}
-                disabled={isRunning}
-                className="w-full mt-4 flex items-center justify-center gap-2"
-              >
-                {isRunning ? (
-                  <span>Processing...</span>
-                ) : (
-                  <>
-                    <PlayIcon className="w-4 h-4" />
-                    <span>Run Baseline Algorithm</span>
-                  </>
-                )}
-              </Button>
-            </Card>
-
-            {/* Results */}
-            {result && (
-              <>
-                {/* KPIs */}
-                <div className="mb-6">
-                  <h2 className="text-sm font-semibold text-gray-900 mb-3">
-                    Key Performance Indicators
-                  </h2>
-                  <div className="space-y-3">
-                    <KPICard
-                      title="Total Distance"
-                      value={result.kpis.totalDistance.toFixed(2)}
-                      unit="km"
-                      icon={<RouteIcon className="w-5 h-5" />}
-                    />
-                    <KPICard
-                      title="Total Time"
-                      value={result.kpis.totalTime.toFixed(2)}
-                      unit="hrs"
-                      icon={<ClockIcon className="w-5 h-5" />}
-                    />
-                    <KPICard
-                      title="Compute Time"
-                      value={result.kpis.computeTime}
-                      unit="ms"
-                    />
-                    <KPICard
-                      title="Number of Stops"
-                      value={result.kpis.numberOfStops}
-                      icon={<UsersIcon className="w-5 h-5" />}
-                    />
-                  </div>
-                </div>
-
-                {/* Map Controls */}
-                <div className="mb-6">
-                  <h2 className="text-sm font-semibold text-gray-900 mb-3">
-                    Map Controls
-                  </h2>
-                  <div className="space-y-2">
-                    <label className="flex items-center gap-2 text-sm">
-                      <input
-                        type="checkbox"
-                        checked={showLabels}
-                        onChange={e =>
-                          setShowLabels(e.target.checked)
-                        }
-                      />
-                      Show Customer Labels
-                    </label>
-
-                    <label className="flex items-center gap-2 text-sm">
-                      <input
-                        type="checkbox"
-                        checked={showRouteNumbers}
-                        onChange={e =>
-                          setShowRouteNumbers(e.target.checked)
-                        }
-                      />
-                      Show Route Numbers
-                    </label>
-                  </div>
-                </div>
-
-                {/* Route Selector */}
-                <div className="mb-6">
                   <Select
-                    label="Select Route"
-                    value={selectedRoute || ''}
-                    onChange={setSelectedRoute}
-                    options={result.routes.map(r => ({
-                      value: r.id,
-                      label: r.representativeName
+                    label="Depot"
+                    value={parameters.depot}
+                    onChange={val =>
+                      setParameters({ ...parameters, depot: val })
+                    }
+                    options={MOCK_DATASET.depots.map(d => ({
+                      value: d.id,
+                      label: d.name
                     }))}
                   />
+
+                  <Input
+                    label="Speed Factor (km/h)"
+                    type="number"
+                    value={parameters.speed}
+                    onChange={val =>
+                      setParameters({ ...parameters, speed: val })
+                    }
+                  />
+
+                  <Input
+                    label="Random Seed"
+                    type="number"
+                    value={parameters.seed}
+                    onChange={val =>
+                      setParameters({ ...parameters, seed: val })
+                    }
+                  />
                 </div>
 
-                {displayedRoute && (
-                  <RouteTable
-                    stops={displayedRoute.stops}
-                    title={`Route: ${displayedRoute.representativeName}`}
-                  />
-                )}
-
                 <Button
-                  onClick={() => navigate('/enhanced')}
-                  className="w-full mt-6"
+                  onClick={handleRun}
+                  disabled={isRunning}
+                  className="w-full mt-4 flex items-center justify-center gap-2"
                 >
-                  Use Baseline as Seed for Enhanced Model
+                  {isRunning ? (
+                    <span>Processing...</span>
+                  ) : (
+                    <>
+                      <PlayIcon className="w-4 h-4" />
+                      <span>Run Baseline Algorithm</span>
+                    </>
+                  )}
                 </Button>
-              </>
-            )}
-          </div>
+              </Card>
+
+              {/* Results */}
+              {result && (
+                <>
+                  {/* KPIs */}
+                  <div className="mb-6">
+                    <h2 className="text-sm font-semibold text-gray-900 mb-3">
+                      Key Performance Indicators
+                    </h2>
+                    <div className="space-y-3">
+                      <KPICard
+                        title="Total Distance"
+                        value={result.kpis.totalDistance.toFixed(2)}
+                        unit="km"
+                        icon={<RouteIcon className="w-5 h-5" />}
+                      />
+                      <KPICard
+                        title="Total Time"
+                        value={result.kpis.totalTime.toFixed(2)}
+                        unit="hrs"
+                        icon={<ClockIcon className="w-5 h-5" />}
+                      />
+                      <KPICard
+                        title="Compute Time"
+                        value={result.kpis.computeTime}
+                        unit="ms"
+                      />
+                      <KPICard
+                        title="Number of Stops"
+                        value={result.kpis.numberOfStops}
+                        icon={<UsersIcon className="w-5 h-5" />}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Map Controls */}
+                  <div className="mb-6">
+                    <h2 className="text-sm font-semibold text-gray-900 mb-3">
+                      Map Controls
+                    </h2>
+                    <div className="space-y-2">
+                      <label className="flex items-center gap-2 text-sm">
+                        <input
+                          type="checkbox"
+                          checked={showLabels}
+                          onChange={e => setShowLabels(e.target.checked)}
+                        />
+                        Show Customer Labels
+                      </label>
+
+                      <label className="flex items-center gap-2 text-sm">
+                        <input
+                          type="checkbox"
+                          checked={showRouteNumbers}
+                          onChange={e => setShowRouteNumbers(e.target.checked)}
+                        />
+                        Show Route Numbers
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Route Selector */}
+                  <div className="mb-6">
+                    <Select
+                      label="Select Route"
+                      value={selectedRoute || ''}
+                      onChange={setSelectedRoute}
+                      options={result.routes.map(r => ({
+                        value: r.id,
+                        label: r.representativeName
+                      }))}
+                    />
+                  </div>
+
+                  {displayedRoute && (
+                    <RouteTable
+                      stops={displayedRoute.stops}
+                      title={`Route: ${displayedRoute.representativeName}`}
+                    />
+                  )}
+
+                  <Button
+                    onClick={() => navigate('/enhanced')}
+                    className="w-full mt-6"
+                  >
+                    Use Baseline as Seed for Enhanced Model
+                  </Button>
+                </>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>
