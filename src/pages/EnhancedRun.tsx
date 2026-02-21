@@ -5,7 +5,7 @@ import { Button } from '../components/Button';
 import { KPICard } from '../components/KPICard';
 import { MapCanvas } from '../components/MapCanvas';
 import { DequePanel } from '../components/DequePanel';
-import { PlayIcon, MenuIcon, XIcon } from 'lucide-react';
+import { PlayIcon } from 'lucide-react';
 import { MOCK_DATASET, generateEnhancedRun } from '../utils/mockData';
 import { AlgorithmRun, Representative } from '../types';
 
@@ -17,7 +17,7 @@ export function EnhancedRun() {
   const [isRunning, setIsRunning] = useState(false);
   const [representatives, setRepresentatives] = useState<Representative[]>([]);
   const [highlightedNodes, setHighlightedNodes] = useState<string[]>([]);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const sidebarOpen = true;
 
   useEffect(() => {
     const stored = localStorage.getItem('baselineRun');
@@ -64,16 +64,6 @@ export function EnhancedRun() {
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Sidebar Toggle Button */}
-            <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="flex items-center gap-1 text-gray-700 px-3 py-1 rounded hover:bg-gray-100 transition-colors"
-            >
-              {sidebarOpen ? <XIcon className="w-4 h-4" /> : <MenuIcon className="w-4 h-4" />}
-              <span className="text-sm">{sidebarOpen ? 'Hide Sidebar' : 'Show Sidebar'}</span>
-            </button>
-
-            {/* Back to Baseline Button */}
             <Button variant="outline" onClick={() => navigate('/baseline')}>
               Back to Baseline
             </Button>
@@ -84,9 +74,8 @@ export function EnhancedRun() {
         <div className="flex-1 flex overflow-hidden">
           {/* Map */}
           <div
-            className={`flex-1 p-6 overflow-auto transition-all duration-300 ${
-              sidebarOpen ? '' : 'w-full'
-            }`}
+            className={`flex-1 p-6 overflow-auto transition-all duration-300 ${sidebarOpen ? '' : 'w-full'
+              }`}
             style={{ minWidth: 0 }}
           >
             {enhancedRun ? (
@@ -163,9 +152,9 @@ export function EnhancedRun() {
                         delta={
                           baselineRun
                             ? calculateDelta(
-                                enhancedRun.kpis.totalDistance,
-                                baselineRun.kpis.totalDistance
-                              )
+                              enhancedRun.kpis.totalDistance,
+                              baselineRun.kpis.totalDistance
+                            )
                             : undefined
                         }
                         deltaLabel="vs baseline"
@@ -177,9 +166,9 @@ export function EnhancedRun() {
                         delta={
                           baselineRun
                             ? calculateDelta(
-                                enhancedRun.kpis.totalTime,
-                                baselineRun.kpis.totalTime
-                              )
+                              enhancedRun.kpis.totalTime,
+                              baselineRun.kpis.totalTime
+                            )
                             : undefined
                         }
                         deltaLabel="vs baseline"
@@ -191,9 +180,9 @@ export function EnhancedRun() {
                         delta={
                           baselineRun?.kpis.coverageRatio
                             ? calculateDelta(
-                                enhancedRun.kpis.coverageRatio!,
-                                baselineRun.kpis.coverageRatio
-                              )
+                              enhancedRun.kpis.coverageRatio!,
+                              baselineRun.kpis.coverageRatio
+                            )
                             : undefined
                         }
                         deltaLabel="vs baseline"
@@ -204,9 +193,9 @@ export function EnhancedRun() {
                         delta={
                           baselineRun?.kpis.workloadBalanceIndex
                             ? calculateDelta(
-                                enhancedRun.kpis.workloadBalanceIndex!,
-                                baselineRun.kpis.workloadBalanceIndex
-                              )
+                              enhancedRun.kpis.workloadBalanceIndex!,
+                              baselineRun.kpis.workloadBalanceIndex
+                            )
                             : undefined
                         }
                         deltaLabel="vs baseline"
